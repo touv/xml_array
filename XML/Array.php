@@ -45,7 +45,6 @@ class XML_Array
 {
     static public $xml_version = '1.0';
     static public $xml_encoding = 'UTF-8';
-    static public $xml_indent = true;
     static public $default_tag_name = 'row';
     static public $text_object = array('$t', '_t', '_text', '#text');
     static public $comment_object = array('$c', '_c', '_comment', '#comment');
@@ -56,71 +55,113 @@ class XML_Array
         'xml:idref' => array('xmlidref', 'xml:idref', 'xml$idref'),
     );
 
+    const START_DOCUMENT = 2;
+    const INDENT = 4;
+
     /**
      * Array to XML
      * @param array
      * @param XMLWriter
      */
-    static public function export($array, $xw = null) 
+    static public function export($array, $options = null) 
     {
-        if (is_null($xw)) {
-            $start = true;
-            $xw = new XMLWriter;
-            $xw->openMemory();
+        $xw = new XMLWriter;
+        $xw->openMemory();
+        if (($options & self::START_DOCUMENT) == self::START_DOCUMENT) {
             $xw->startDocument(self::$xml_version, self::$xml_encoding);
-            $xw->setIndent(self::$xml_indent);
+        }
+        if (($options & self::INDENT) == self::INDENT) {
+            $xw->setIndent(true);
+        }
+        if (count($array) === 1 and !is_numeric(key($array))) {
+            self::_export($array, $xw);
         }
         else {
-            $start = false;
+            self::_export(array(self::$default_tag_name => $array), $xw);
         }
-        foreach($array as $key => $value)
-        {
+        if (($options & self::START_DOCUMENT) == self::START_DOCUMENT) {
+            $xw->endDocument();
+        }
+        return $xw->outputMemory();
+    }
+
+    static protected function _export($array, $xw = null) 
+    {
+        if (!is_array($array)) {
+            $xw->writeCData(is_string($value) ? var_export($string, true) : self::_val($value));
+            return;
+        }
+        foreach($array as $key => $value) {
             if (is_string($key) and !is_array($value)) {
                 if (in_array($key, self::$text_object)) {
-                    $xw->text($value);
+                    $xw->text(self::_val($value));
                 }
                 elseif (in_array($key, self::$comment_object)) {
-                    $xw->writeComment($value);
+                    $xw->writeComment(self::_val($value));
                 }
                 else {
                     $found  = false;
                     foreach(self::$special_attributes as $name => $aliases) {
                         if (in_array($key, $aliases)) {
                             $found  = true;
-                            $xw->writeAttribute($name, $value);
+                            $xw->writeAttribute($name, self::_val($value));
                             break;
                         }
                     }
                     if (!$found) {
-                        $xw->writeAttribute($key, $value);
+                        $xw->writeAttribute($key, self::_val($value));
                     }
                 }
             }
             elseif (is_string($key) and is_array($value) and !is_numeric(key($value))) {
-                $xw->startElement($key);
-                self::export($value, $xw);
-                $xw->endElement();
+                if (in_array($key, self::$text_object)) {
+                    $xw->text(self::_val($value));
+                }
+                elseif (in_array($key, self::$comment_object)) {
+                    $xw->writeComment(self::_val($value));
+                }
+                else {
+                    $xw->startElement($key);
+                    self::_export($value, $xw);
+                    $xw->endElement();
+                }
             }
             elseif (is_string($key) and is_array($value) and is_numeric(key($value))) {
-                foreach($value as $k => $v) {
+                if (in_array($key, self::$text_object)) {
+                    $xw->text(self::_val($value));
+                }
+                elseif (in_array($key, self::$comment_object)) {
+                    $xw->writeComment(self::_val($value));
+                }
+                elseif (is_array(current($value))) {
+                    foreach($value as $k => $v) {
+                        $xw->startElement($key);                    
+                        self::_export($v, $xw);
+                        $xw->endElement();
+                    }
+                }
+                else {
                     $xw->startElement($key);
-                    self::export($v, $xw);
+                    self::_export($value, $xw);
                     $xw->endElement();
                 }
             }
             elseif (is_numeric($key)  and !is_array($value)) {
-                $xw->writeCData($value);
+                $xw->writeCData(is_string($value) ? var_export($value, true) : self::_val($value));
             }
             elseif (is_numeric($key)  and is_array($value)) {
                 $xw->startElement(self::$default_tag_name);
-                self::export($value, $xw);
+                self::_export($value, $xw);
                 $xw->endElement();
             }
         }
-        if ($start) {
-            $xw->endDocument();
-            return $xw->outputMemory();
-        }
+    }
+
+    static protected function _val($value) 
+    {
+        if (is_string($value)) return $value;
+        elseif(is_array($value)) return var_export($value, true);
+        else strval($value);
     }
 
     /**
