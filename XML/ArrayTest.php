@@ -15,4 +15,4 @@ class XML_ArrayTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(preg_replace(',\s+,', ' ', $input), preg_replace(',\s+,', ' ', $output));
     }
 
-        }
+}

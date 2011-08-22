@@ -49,7 +49,7 @@ class XML_Array
     static public $text_object = array('$t', '_t', '_text', '#text');
     static public $comment_object = array('$c', '_c', '_comment', '#comment');
     static public $special_attributes = array(
-        'xml:id'    => array('xmllang', 'xml:lang', 'xml$lang'),
+        'xml:lang'    => array('xmllang', 'xml:lang', 'xml$lang'),
         'xml:space' => array('xmlspace', 'xml:space', 'xml$space'),
         'xml:id'    => array('xmlid', 'xml:id', 'xml$id'),
         'xml:idref' => array('xmlidref', 'xml:idref', 'xml$idref'),

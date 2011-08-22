@@ -1,0 +1,389 @@
+XML_Array - XML / ARRAY Mapping with PHP
+========================================
+Nicolas Thouvenin <nthouvenin@gmail.xom>
+v1.0, August 2011:
+
+
+Synopis
+--------
+
+XML_Array is a PHP class that converts any XML document (or strings) in PHP's array and vice versa.
+
+
+Format
+------
+
+The format chosen is totally inspired by the Google's rules to convert XML in JSON.
+
+
+Main rules
+~~~~~~~~~~
+
+[options="header"]
+|===============================================================
+| ARRAY | XML |
+| 
+
+key => array(
+    key1 => value,
+) 
+
+ | <key key1="value/> |
+|
+
+ key => array(
+    #text => value1,
+) 
+
+ | 
+
+<key>value1</key>
+
+ |
+| 
+
+key => array(
+    array(...),
+    array(...),
+)
+
+  | 
+
+<key>...</key><key>...</key>
+
+ |
+| 
+
+0 => value
+
+ | 
+
+<![CDATA['value']]>
+
+ |
+| 
+
+key => value
+
+  | 
+
+<row key="value" />
+
+ |
+| 
+
+#comment => value
+
+  | 
+
+<!--value-->
+
+ |
+|===============================================================
+
+
+Reserved keys
+~~~~~~~~~~~~~
+
+[options="header"]
+|===============================================================
+| XML | values key |
+| text node | '$t', '_t', '_text', '#text' |
+| comment node | '$c', '_c', '_comment', '#comment' |
+| xml:lang | 'xmllang', 'xml:lang', 'xml$lang' |
+| xml:space | 'xmlspace', 'xml:space', 'xml$space' |
+| xml:id | 'xmlid', 'xml:id', 'xml$id' |
+| xml:idref | 'xmlidref', 'xml:idref', 'xml$idref' |
+|===============================================================
+
+
+
+Install
+-------
+
+.Via the pear's channel
+
+----------------------------------------------------------------
+pear channel-discover pear.respear.net
+pear install respear/XML_Array
+----------------------------------------------------------------
+
+
+
+.Just download the file 
+----------------------------------------------------------------
+wget https://raw.github.com/touv/xml_array/master/XML/Array.php
+----------------------------------------------------------------
+
+
+XML2Array's Examples
+--------------------
+
+.PHP code
+------------------
+<?php
+$xml = <<<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:openSearch="http://a9.com/-/spec/opensearchrss/1.0/" xmlns:gd="http://schemas.google.com/g/2005" xmlns:gCal="http://schemas.google.com/gCal/2005">
+  <id>XXX</id>
+  <updated>2006-11-12T21:25:30.000Z</updated>
+  <title type="text">Google Developer Events</title>
+  <subtitle type="text">The calendar contains information about upcoming developer conferences at which Google will be speaking, along with other developer-related events.</subtitle>
+  <link rel="http://schemas.google.com/g/2005#feed" type="application/atom+xml" href="XXX"/>
+  <link rel="self" type="application/atom+xml" href="XXX"/>
+  <author>
+    <name>Google Developer Calendar</name>
+    <email>developer-calendar@google.com</email>
+  </author>
+  <generator version="1.0" uri="http://www.google.com/calendar">Google Calendar</generator>
+  <openSearch:startIndex>1</openSearch:startIndex>
+  <openSearch:itemsPerPage>25</openSearch:itemsPerPage>
+  <gCal:timezone value="America/Los_Angeles"/>
+  <entry>
+    <id>XXX</id>
+    <published>2006-11-12T21:25:30.000Z</published>
+    <updated>2006-11-12T21:25:30.000Z</updated>
+    <category scheme="XXX" term="XXX"/>
+    <category scheme="YYY" term="YYY"/>
+    <title type="text">WebmasterWorld PubCon 2006: Google Developer Tools in General</title>
+	<content type="text">Google is sponsoring at &lt;a href=&quot;http://www.pubcon.com/&quot;&gt;WebmasterWorld PubCon 2006&lt;/a&gt;. Come and visit us at the booth or join us for an evening demo reception where we will be talking &quot;5 ways to enhance your website with Google Code&quot;.  After all, it is Vegas, baby! See you soon.</content>
+    <link rel="alternate" type="text/html" href="XXX" title="alternate"/>
+    <link rel="self" type="application/atom+xml" href="XXX"/>
+    <author>
+      <name>Google Developer Calendar</name>
+      <email>developer-calendar@google.com</email>
+    </author>
+    <gCal:sendEventNotifications value="true"/>
+    <gd:comments>
+      <gd:feedLink href="XXX"/>
+    </gd:comments>
+    <gd:transparency value="XXX"/>
+    <gd:eventStatus value="XXX"/>
+    <gd:where valueString="3150 Paradise Road, Las Vegas, NV 89109"/>
+    <gd:when startTime="2006-11-15" endTime="2006-11-17">
+      <gd:reminder minutes="10"/>
+    </gd:when>
+  </entry>
+  <!-- Etc. -->
+</feed>
+EOT;
+require_once 'XML/Array.php';
+var_export(XML_Array::import($xml));
+?>
+----------------------------------------------------------------
+
+.Result
+................................................................
+array (
+  'feed' => 
+  array (
+    'xmlns' => 'http://www.w3.org/2005/Atom',
+    'xmlns:openSearch' => 'http://a9.com/-/spec/opensearchrss/1.0/',
+    'xmlns:gd' => 'http://schemas.google.com/g/2005',
+    'xmlns:gCal' => 'http://schemas.google.com/gCal/2005',
+    'id' => 
+    array (
+      '#text' => 'XXX',
+    ),
+    'updated' => 
+    array (
+      '#text' => '2006-11-12T21:25:30.000Z',
+    ),
+    'title' => 
+    array (
+      'type' => 'text',
+      '#text' => 'Google Developer Events',
+    ),
+    'subtitle' => 
+    array (
+      'type' => 'text',
+      '#text' => 'The calendar contains information about upcoming developer conferences at which Google will be speaking, along with other developer-related events.',
+    ),
+    'link' => 
+    array (
+      0 => 
+      array (
+        'rel' => 'http://schemas.google.com/g/2005#feed',
+        'type' => 'application/atom+xml',
+        'href' => 'XXX',
+      ),
+      1 => 
+      array (
+        'rel' => 'self',
+        'type' => 'application/atom+xml',
+        'href' => 'XXX',
+      ),
+    ),
+    'author' => 
+    array (
+      'name' => 
+      array (
+        '#text' => 'Google Developer Calendar',
+      ),
+      'email' => 
+      array (
+        '#text' => 'developer-calendar@google.com',
+      ),
+    ),
+    'generator' => 
+    array (
+      'version' => '1.0',
+      'uri' => 'http://www.google.com/calendar',
+      '#text' => 'Google Calendar',
+    ),
+    'openSearch:startIndex' => 
+    array (
+      '#text' => '1',
+    ),
+    'openSearch:itemsPerPage' => 
+    array (
+      '#text' => '25',
+    ),
+    'gCal:timezone' => 
+    array (
+      'value' => 'America/Los_Angeles',
+    ),
+    'entry' => 
+    array (
+      'id' => 
+      array (
+        '#text' => 'XXX',
+      ),
+      'published' => 
+      array (
+        '#text' => '2006-11-12T21:25:30.000Z',
+      ),
+      'updated' => 
+      array (
+        '#text' => '2006-11-12T21:25:30.000Z',
+      ),
+      'category' => 
+      array (
+        0 => 
+        array (
+          'scheme' => 'XXX',
+          'term' => 'XXX',
+        ),
+        1 => 
+        array (
+          'scheme' => 'YYY',
+          'term' => 'YYY',
+        ),
+      ),
+      'title' => 
+      array (
+        'type' => 'text',
+        '#text' => 'WebmasterWorld PubCon 2006: Google Developer Tools in General',
+      ),
+      'content' => 
+      array (
+        'type' => 'text',
+        '#text' => 'Google is sponsoring at <a href="http://www.pubcon.com/">WebmasterWorld PubCon 2006</a>. Come and visit us at the booth or join us for an evening demo reception where we will be talking "5 ways to enhance your website with Google Code".  After all, it is Vegas, baby! See you soon.',
+      ),
+      'link' => 
+      array (
+        0 => 
+        array (
+          'rel' => 'alternate',
+          'type' => 'text/html',
+          'href' => 'XXX',
+          'title' => 'alternate',
+        ),
+        1 => 
+        array (
+          'rel' => 'self',
+          'type' => 'application/atom+xml',
+          'href' => 'XXX',
+        ),
+      ),
+      'author' => 
+      array (
+        'name' => 
+        array (
+          '#text' => 'Google Developer Calendar',
+        ),
+        'email' => 
+        array (
+          '#text' => 'developer-calendar@google.com',
+        ),
+      ),
+      'gCal:sendEventNotifications' => 
+      array (
+        'value' => 'true',
+      ),
+      'gd:comments' => 
+      array (
+        'gd:feedLink' => 
+        array (
+          'href' => 'XXX',
+        ),
+      ),
+      'gd:transparency' => 
+      array (
+        'value' => 'XXX',
+      ),
+      'gd:eventStatus' => 
+      array (
+        'value' => 'XXX',
+      ),
+      'gd:where' => 
+      array (
+        'valueString' => '3150 Paradise Road, Las Vegas, NV 89109',
+      ),
+      'gd:when' => 
+      array (
+        'startTime' => '2006-11-15',
+        'endTime' => '2006-11-17',
+        'gd:reminder' => 
+        array (
+          'minutes' => '10',
+        ),
+      ),
+    ),
+    '#comment' => ' Etc. ',
+  ),
+)
+................................................................
+
+
+
+Array2XML 's Example
+--------------------
+
+.PHP code
+----------------------------------------------------------------
+<?php
+$array = array (                     
+  'root' =>                          
+  array (                            
+    'machin' =>                      
+    array (
+      0 => 
+      array (
+        'truc' => 0,
+        '#text' => 'bidule',
+      ),
+      1 => 
+      array (
+        'chouette' => '1',
+        '#text' => 'chose',
+      ),
+    ),
+  ),
+);
+require_once 'XML/Array.php';
+echo XML_array::export($array);
+?>
+----------------------------------------------------------------
+
+
+
+.Result
+................................................................
+<root>
+    <machin truc="">bidule</machin>
+    <machin chouette="1">chose</machin>
+</root>
+................................................................
+
+
