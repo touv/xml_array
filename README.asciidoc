@@ -116,8 +116,8 @@ wget https://raw.github.com/touv/xml_array/master/XML/Array.php
 ----------------------------------------------------------------
 
 
-XML2Array's Examples
---------------------
+XML2Array
+---------
 
 .PHP code
 ------------------
@@ -347,8 +347,8 @@ array (
 
 
 
-Array2XML 's Example
---------------------
+Array2XML
+---------
 
 .PHP code
 ----------------------------------------------------------------
